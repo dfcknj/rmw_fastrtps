@@ -1042,7 +1042,8 @@ rmw_ret_t rmw_publish(const rmw_publisher_t * publisher, const void * ros_messag
   assert(info);
 
   eprosima::fastcdr::FastBuffer buffer;
-  eprosima::fastcdr::Cdr ser(buffer);
+  eprosima::fastcdr::Cdr ser(buffer, eprosima::fastcdr::Cdr::DEFAULT_ENDIAN,
+    eprosima::fastcdr::Cdr::DDS_CDR);
 
   if (_serialize_ros_message(ros_message, ser, info->type_support_,
     info->typesupport_identifier_))
@@ -1806,7 +1807,8 @@ rmw_ret_t rmw_send_request(const rmw_client_t * client,
   assert(info);
 
   eprosima::fastcdr::FastBuffer buffer;
-  eprosima::fastcdr::Cdr ser(buffer);
+  eprosima::fastcdr::Cdr ser(buffer, eprosima::fastcdr::Cdr::DEFAULT_ENDIAN,
+    eprosima::fastcdr::Cdr::DDS_CDR);
 
   if (_serialize_ros_message(ros_request, ser, info->request_type_support_,
     info->typesupport_identifier_))
@@ -1923,7 +1925,8 @@ rmw_ret_t rmw_send_response(const rmw_service_t * service,
   assert(info);
 
   eprosima::fastcdr::FastBuffer buffer;
-  eprosima::fastcdr::Cdr ser(buffer);
+  eprosima::fastcdr::Cdr ser(buffer, eprosima::fastcdr::Cdr::DEFAULT_ENDIAN,
+    eprosima::fastcdr::Cdr::DDS_CDR);
 
   _serialize_ros_message(ros_response, ser, info->response_type_support_,
     info->typesupport_identifier_);
