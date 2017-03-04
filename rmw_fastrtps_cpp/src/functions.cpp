@@ -722,7 +722,11 @@ bool file_exist_and_readable(const char * filepath)
   }
   fprintf(stderr, "file exists!\n");
   // check if the file is readable from user
+#ifdef WIN32
+  if (!(buf.st_mode & _S_IREAD)) {
+#else
   if (!(buf.st_mode & S_IRUSR)) {
+#endif
     return false;
   }
   fprintf(stderr, "file readable!\n");
