@@ -700,6 +700,7 @@ rmw_node_t * rmw_create_node(const char * name, size_t domain_id)
     return NULL;
   }
 
+  // TODO(mikaelarguedas) Seems weird to set log verbosity here
   eprosima::fastrtps::Log::SetVerbosity(eprosima::fastrtps::Log::Error);
 
   ParticipantAttributes participantParam;
