@@ -21,7 +21,8 @@
 #include <utility>
 #include <set>
 #include <string>
-#include <sys/stat.h>
+
+#include "c_utilities/file_permissions.h"
 
 #include "rmw/allocators.h"
 #include "rmw/rmw.h"
@@ -711,28 +712,6 @@ rmw_node_t * rmw_create_node(const char * name, size_t domain_id)
 
 ////////////////////////////////////////////////////
 
-bool file_exist_and_readable(const char * filepath)
-{
-  struct stat buf;
-  fprintf(stderr, "entering file_exist_and_readable\n");
-  fprintf(stderr, "checking if '%s' exists!\n", filepath);
-  // check if the file exists
-  if (stat(filepath, &buf) < 0) {
-    return false;
-  }
-  fprintf(stderr, "file exists!\n");
-  // check if the file is readable from user
-#ifdef WIN32
-  if (!(buf.st_mode & _S_IREAD)) {
-#else
-  if (!(buf.st_mode & S_IRUSR)) {
-#endif
-    return false;
-  }
-  fprintf(stderr, "file readable!\n");
-  return true;
-}
-
 bool rmw_get_security_file_paths(std::array<std::string, 3> &security_files_paths, const char * node_secure_root)
 {
   std::string ros_secure_root = std::string(node_secure_root);
@@ -741,34 +720,18 @@ bool rmw_get_security_file_paths(std::array<std::string, 3> &security_files_path
   const char * file_names[3] = {"ca.cert.pem", "cert.pem", "key.pem"};
   size_t num_files = 3;
 
-  fprintf(stderr, "entering rmw_get_security_file_paths\n");
-  size_t i, maxlenextensions = 100;
-  for (i = 0; i < num_files; i++) {
-    size_t tmplen = strlen(file_names[i]);
-    if (tmplen < maxlenextensions) {
-      maxlenextensions = tmplen;
-    }
-  }
-
   const char * file_prefix = "file://";
 
   ros_secure_root += "/";
   std::string tmpstr;
+  size_t i;
   for (i = 0; i < num_files; i++) {
-    fprintf(stderr, "building path %zu\n", i);
-    tmpstr = std::string(ros_secure_root);
-    fprintf(stderr, "tmpstr1 %s\n", tmpstr.c_str());
-    tmpstr += file_names[i];
-    fprintf(stderr, "tmpstr2 %s\n", tmpstr.c_str());
-    if (!file_exist_and_readable(tmpstr.c_str())) {
+    tmpstr = std::string(ros_secure_root + file_names[i]);
+    if (!is_file_readable(tmpstr.c_str())) {
       return false;
     }
-    fprintf(stderr, "tmpstr3 '%s' exists\n", tmpstr.c_str());
-    fprintf(stderr, "allocating security_files_paths[%zu]\n", i);
     security_files_paths[i] = std::string(file_prefix);
-    fprintf(stderr, "assigning security_files_paths[%zu]\n", i);
     security_files_paths[i] += tmpstr;
-    fprintf(stderr, "[%zu]: ***%s***\n", i, security_files_paths[i].c_str());
   }
   return true;
 }
@@ -812,11 +775,10 @@ rmw_create_secure_node(const char * name, size_t domain_id, const char * node_se
     property_policy.properties().emplace_back(
         Property("rtps.participant.rtps_protection_kind", "ENCRYPT"));
     participantParam.rtps.properties = property_policy;
-    fprintf(stderr, "all good creating secured FastRTPS participant!\n");
+    fprintf(stderr, "Creating secured FastRTPS participant!\n");
   } else {
-    fprintf(stderr, "couldn't find all security files!\ncreating non secured node");
+    fprintf(stderr, "couldn't find all security files!\ncreating non secured node instead");
   }
-  fprintf(stderr, "calling create node\n");
   return create_node(name, participantParam);
 }
 
