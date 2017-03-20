@@ -622,7 +622,6 @@ rmw_ret_t rmw_init()
 
 rmw_node_t * create_node(const char * name, ParticipantAttributes participantParam)
 {
-
   if (!name) {
     RMW_SET_ERROR_MSG("name is null");
     return NULL;
@@ -708,12 +707,12 @@ rmw_node_t * rmw_create_node(const char * name, size_t domain_id)
   participantParam.rtps.setName(name);
 
   return create_node(name, participantParam);
-
 }
 
 ////////////////////////////////////////////////////
 
-bool rmw_get_security_file_paths(std::array<std::string, 3> &security_files_paths, const char * node_secure_root)
+bool rmw_get_security_file_paths(
+  std::array<std::string, 3> & security_files_paths, const char * node_secure_root)
 {
   std::string ros_secure_root = std::string(node_secure_root);
 
@@ -731,8 +730,7 @@ bool rmw_get_security_file_paths(std::array<std::string, 3> &security_files_path
     if (!is_file_readable(tmpstr.c_str())) {
       return false;
     }
-    security_files_paths[i] = std::string(file_prefix);
-    security_files_paths[i] += tmpstr;
+    security_files_paths[i] = std::string(file_prefix + tmpstr);
   }
   return true;
 }
@@ -758,23 +756,23 @@ rmw_create_secure_node(const char * name, size_t domain_id, const char * node_se
 
   std::array<std::string, 3> security_files_paths;
 
-  if(rmw_get_security_file_paths(security_files_paths, node_secure_root)) {
+  if (rmw_get_security_file_paths(security_files_paths, node_secure_root)) {
     PropertyPolicy property_policy;
-    property_policy.properties().emplace_back(Property("dds.sec.auth.plugin",
-                "builtin.PKI-DH"));
+    property_policy.properties().emplace_back(
+      Property("dds.sec.auth.plugin", "builtin.PKI-DH"));
     property_policy.properties().emplace_back(
       Property("dds.sec.auth.builtin.PKI-DH.identity_ca",
-        security_files_paths[0]));
+      security_files_paths[0]));
     property_policy.properties().emplace_back(
       Property("dds.sec.auth.builtin.PKI-DH.identity_certificate",
-        security_files_paths[1]));
+      security_files_paths[1]));
     property_policy.properties().emplace_back(
       Property("dds.sec.auth.builtin.PKI-DH.private_key",
-        security_files_paths[2]));
-    property_policy.properties().emplace_back(Property("dds.sec.crypto.plugin",
-                "builtin.AES-GCM-GMAC"));
+      security_files_paths[2]));
     property_policy.properties().emplace_back(
-        Property("rtps.participant.rtps_protection_kind", "ENCRYPT"));
+      Property("dds.sec.crypto.plugin", "builtin.AES-GCM-GMAC"));
+    property_policy.properties().emplace_back(
+      Property("rtps.participant.rtps_protection_kind", "ENCRYPT"));
     participantParam.rtps.properties = property_policy;
     fprintf(stderr, "Creating secured FastRTPS participant!\n");
   } else {
@@ -898,8 +896,10 @@ rmw_publisher_t * rmw_create_publisher(const rmw_node_t * node,
   {
     // set the encryption property on the publisher
     PropertyPolicy publisher_property_policy;
-    publisher_property_policy.properties().emplace_back("rtps.endpoint.submessage_protection_kind", "ENCRYPT");
-    publisher_property_policy.properties().emplace_back("rtps.endpoint.payload_protection_kind", "ENCRYPT");
+    publisher_property_policy.properties().emplace_back(
+      "rtps.endpoint.submessage_protection_kind", "ENCRYPT");
+    publisher_property_policy.properties().emplace_back(
+      "rtps.endpoint.payload_protection_kind", "ENCRYPT");
     publisherParam.properties = publisher_property_policy;
     printf("publisher security property set\n");
   }
@@ -1170,8 +1170,10 @@ rmw_subscription_t * rmw_create_subscription(const rmw_node_t * node,
     printf("subscriber security property set\n");
     // set the encryption property on the publisher
     PropertyPolicy subscriber_property_policy;
-    subscriber_property_policy.properties().emplace_back("rtps.endpoint.submessage_protection_kind", "ENCRYPT");
-    subscriber_property_policy.properties().emplace_back("rtps.endpoint.payload_protection_kind", "ENCRYPT");
+    subscriber_property_policy.properties().emplace_back(
+      "rtps.endpoint.submessage_protection_kind", "ENCRYPT");
+    subscriber_property_policy.properties().emplace_back(
+      "rtps.endpoint.payload_protection_kind", "ENCRYPT");
     subscriberParam.properties = subscriber_property_policy;
   }
 
