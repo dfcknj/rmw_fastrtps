@@ -32,6 +32,7 @@
 #include "rmw_fastrtps_cpp/MessageTypeSupport.h"
 #include "rmw_fastrtps_cpp/ServiceTypeSupport.h"
 
+#include "fastrtps/config.h"
 #include "fastrtps/Domain.h"
 #include "fastrtps/participant/Participant.h"
 #include "fastrtps/attributes/ParticipantAttributes.h"
@@ -756,6 +757,7 @@ rmw_create_secure_node(const char * name, size_t domain_id, const char * node_se
 
   std::array<std::string, 3> security_files_paths;
 
+#if HAVE_SECURITY
   if (rmw_get_security_file_paths(security_files_paths, node_secure_root)) {
     PropertyPolicy property_policy;
     property_policy.properties().emplace_back(
@@ -778,6 +780,7 @@ rmw_create_secure_node(const char * name, size_t domain_id, const char * node_se
   } else {
     fprintf(stderr, "couldn't find all security files!\ncreating non secured node instead");
   }
+#endif
   return create_node(name, participantParam);
 }
 
@@ -889,6 +892,7 @@ rmw_publisher_t * rmw_create_publisher(const rmw_node_t * node,
   publisherParam.qos.m_publishMode.kind = ASYNCHRONOUS_PUBLISH_MODE;
   publisherParam.historyMemoryPolicy = PREALLOCATED_WITH_REALLOC_MEMORY_MODE;
 
+#if HAVE_SECURITY
   // see if our participant has a security property set
   if (eprosima::fastrtps::PropertyPolicyHelper::find_property(
       participant->getAttributes().rtps.properties,
@@ -903,6 +907,7 @@ rmw_publisher_t * rmw_create_publisher(const rmw_node_t * node,
     publisherParam.properties = publisher_property_policy;
     printf("publisher security property set\n");
   }
+#endif
 
   // 1 Heartbeat every 10ms
   // publisherParam.times.heartbeatPeriod.seconds = 0;
@@ -1162,6 +1167,7 @@ rmw_subscription_t * rmw_create_subscription(const rmw_node_t * node,
   subscriberParam.topic.topicName = topic_name;
   subscriberParam.historyMemoryPolicy = PREALLOCATED_WITH_REALLOC_MEMORY_MODE;
 
+#if HAVE_SECURITY
   // see if our subscriber has a security property set
   if (eprosima::fastrtps::PropertyPolicyHelper::find_property(
       participant->getAttributes().rtps.properties,
@@ -1176,6 +1182,7 @@ rmw_subscription_t * rmw_create_subscription(const rmw_node_t * node,
       "rtps.endpoint.payload_protection_kind", "ENCRYPT");
     subscriberParam.properties = subscriber_property_policy;
   }
+#endif
 
   if (!get_datareader_qos(*qos_policies, subscriberParam)) {
     goto fail;
