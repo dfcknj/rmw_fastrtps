@@ -723,7 +723,11 @@ bool rmw_get_security_file_paths(
 
   const char * file_prefix = "file://";
 
+#ifdef WIN32
+  ros_secure_root += "\\";
+#else
   ros_secure_root += "/";
+#endif
   std::string tmpstr;
   size_t i;
   for (i = 0; i < num_files; i++) {
