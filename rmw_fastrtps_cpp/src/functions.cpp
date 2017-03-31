@@ -22,7 +22,7 @@
 #include <set>
 #include <string>
 
-#include "c_utilities/file_permissions.h"
+#include "c_utilities/filesystem.h"
 
 #include "rmw/allocators.h"
 #include "rmw/rmw.h"
@@ -732,7 +732,7 @@ bool rmw_get_security_file_paths(
   size_t i;
   for (i = 0; i < num_files; i++) {
     tmpstr = std::string(ros_secure_root + file_names[i]);
-    if (!is_file_readable(tmpstr.c_str())) {
+    if (utilities_is_readable(tmpstr.c_str())) {
       return false;
     }
     security_files_paths[i] = std::string(file_prefix + tmpstr);
