@@ -768,7 +768,6 @@ rmw_create_secure_node(const char * name, size_t domain_id, const char * node_se
     property_policy.properties().emplace_back(
       Property("rtps.participant.rtps_protection_kind", "ENCRYPT"));
     participantParam.rtps.properties = property_policy;
-    fprintf(stderr, "Creating secured FastRTPS participant!\n");
   } else {
     fprintf(stderr, "couldn't find all security files!\ncreating non secured node instead");
   }
@@ -897,7 +896,7 @@ rmw_publisher_t * rmw_create_publisher(const rmw_node_t * node,
     publisher_property_policy.properties().emplace_back(
       "rtps.endpoint.payload_protection_kind", "ENCRYPT");
     publisherParam.properties = publisher_property_policy;
-    printf("publisher security property set\n");
+    printf("publisher security property set!\n");
   }
 #endif
 
