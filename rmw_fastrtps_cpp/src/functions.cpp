@@ -710,28 +710,18 @@ rmw_node_t * rmw_create_node(const char * name, size_t domain_id)
   return create_node(name, participantParam);
 }
 
-////////////////////////////////////////////////////
-
 bool rmw_get_security_file_paths(
   std::array<std::string, 3> & security_files_paths, const char * node_secure_root)
 {
-  std::string ros_secure_root = std::string(node_secure_root);
-
   // here assume only 3 files for security
   const char * file_names[3] = {"ca.cert.pem", "cert.pem", "key.pem"};
   size_t num_files = 3;
 
   const char * file_prefix = "file://";
 
-#ifdef WIN32
-  ros_secure_root += "\\";
-#else
-  ros_secure_root += "/";
-#endif
   std::string tmpstr;
-  size_t i;
-  for (i = 0; i < num_files; i++) {
-    tmpstr = std::string(ros_secure_root + file_names[i]);
+  for (size_t i = 0; i < num_files; i++) {
+    tmpstr = std::string(utilities_join_path(node_secure_root, file_names[i]));
     if (!utilities_is_readable(tmpstr.c_str())) {
       return false;
     }
@@ -739,8 +729,6 @@ bool rmw_get_security_file_paths(
   }
   return true;
 }
-
-////////////////////////////////////////////////////
 
 rmw_node_t *
 rmw_create_secure_node(const char * name, size_t domain_id, const char * node_secure_root)
